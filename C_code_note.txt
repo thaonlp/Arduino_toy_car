@@ -1,0 +1,121 @@
+#include <SoftwareSerial.h> // import the serial library
+
+#define ON HIGH
+#define OFF LOW
+#define MAX 255
+#define MIN 0
+
+//Define motor pins
+const int motorFrontA    = 8; // Pin 8 of L298
+const int motorFrontB    = 9;    // Pin 9 of L298
+
+const int motorBackA    = 10; // Pin 10 of L298
+const int motorBackB    = 11;    // Pin 11 of L298
+
+//Bluetooth Receive, Transmit (RX, TX)
+const int bt_RX = 5;
+const int bt_TX = 6;
+int btData;
+
+//LEDs
+const int LED_L = 3;
+const int LED_R = 4;
+
+//Buzzer / Speaker to Arduino UNO
+const int buzzer = 2 ;
+
+SoftwareSerial bl_hc06 (bt_RX, bt_TX);
+void init_bluetooth() {
+    bl_hc06.begin(9600);
+    bl_hc06.println("HC06 Bluetooth device init!");
+}
+
+void init_LED() {
+    pinMode(LED_L, OUTPUT);
+    pinMode(LED_R, OUTPUT);
+}
+
+void init_buzzer() {
+    pinMode(buzzer, OUTPUT);
+}
+
+void init_motor() {
+    pinMode(motorFrontA, OUTPUT);
+    pinMode(motorFrontB, OUTPUT);
+    pinMode(motorBackA, OUTPUT);
+    pinMode(motorBackB, OUTPUT);
+}
+
+void light(int status) {
+    digitalWrite(LED_L ,status);
+    digitalWrite(LED_R ,status);
+}
+
+void buzzer(int status) {
+    if (status == ON)
+        tone(buzzer, 1000);
+    else
+        notone(buzzer);
+}
+
+
+// Motor Function
+void run_forward() {
+    analogWrite(motorBackA,MAX);
+    analogWrite(motorBackB,MIN);
+}
+
+void run_backward() {
+    analogWrite(motorBackA,MIN);
+    analogWrite(motorBackB,MAX);
+}
+
+void turn_left() {
+    analogWrite(motorFrontA,MIN);
+    analogWrite(motorFrontB,MAX);
+}
+
+void turn_right() {
+    analogWrite(motorFrontA,MAX);
+    analogWrite(motorFrontB,MIN);
+}
+
+void go_straight() {
+    analogWrite(motorFrontA,MIN);
+    analogWrite(motorFrontB,MIN);
+}
+
+void stop_car() {
+    analogWrite(motorBackA,MIN);
+    analogWrite(motorBackB,MIN);
+}
+
+void setup() {
+    // put your setup code here, to run once:
+    // initialize the digital pin as an output.
+    init_bluetooth();
+    init_LED();
+    init_buzzer();
+    init_motor();
+}
+
+void loop() {
+    if (bl_hc06.available()){
+        btData=bl_hc06.read();
+        if(btData=='1'){
+            light(ON);
+            bl_hc06.println("LED On");
+        }
+        if (btData=='0'){
+            light(OFF);
+            bl_hc06.println("LED Off");
+        }
+     }
+     switch (btData) {
+        case "a"
+            light(ON);
+            buzzer(ON);
+
+     }
+    delay(100);// prepare for next data ...
+}
