@@ -81,7 +81,7 @@ void buzzer_action (int state) {
 }
 
 long utsn_reading(){
-    long duration, distanceCm;
+    long duration, distCm;
 
     digitalWrite(UTSN_TRIG, LOW);
     delayMicroseconds(2);
@@ -90,21 +90,21 @@ long utsn_reading(){
     digitalWrite(UTSN_TRIG, LOW);
 
     duration = pulseIn(UTSN_ECHO,HIGH);
-    distanceCm = duration / 29.1 / 2 ;
+    distCm = duration / 29.1 / 2 ;
 
-    if (distanceCm <= 0){
+    if (distCm <= 0){
         Serial.println("Out of range");
         return ERR;
     }
     else {
-        Serial.print(distanceCm);
+        Serial.print(distCm);
         Serial.print("cm");
         Serial.println();
     }
 
     delay(1000);
 
-    return distanceCm;
+    return distCm;
 }
 
 // Motor Function
@@ -153,45 +153,59 @@ void loop() {
 
     if (utsnData != ERR)
         Serial.println("Ultrasonic sensor ENABLED!");
-    else {
-        Serial.println("Ultrasonic sensor DISABLED!");
-        if (bt_hc06.available()){
-            btData=bt_hc06.read();
-
-            switch (btData) {
-            case 'a': //Light on
-                light_action(ON);
-                break;
-            case 'b': //Light off
-                light_action(OFF);
-                break;
-            case 'c': //Buzzer on
-                buzzer_action(ON);
-                break;
-            case 'd': //Buzzer off
-                buzzer_action(OFF);
-                break;
-            case 'e': //Go Straight
-                go_straight();
-                break;
-            case 'f': //Turn Left
-                turn_left();
-                break;
-            case 'g': //Turn Right
+        go_straight();
+        if ((utsnData < 15) && (utsnData > 0)) {
+            if ((utsnData % 2) == 0) {
+                Serial.println("Backward right!");
                 turn_right();
-                break;
-            case 'h': //Go Forward
-                run_forward();
-                break;
-            case 'i': //Go Backward
                 run_backward();
-                break;
-            case 'j': //Stop
-                stop_car();
-                break;
             }
+            else {
+                Serial.println("Backward left!");
+                turn_left();
+                run_backward();
+            }
+            delay(100);
+        }
+    else
+        Serial.println("Ultrasonic sensor DISABLED!");
+
+    if (bt_hc06.available()){
+        btData=bt_hc06.read();
+        switch (btData) {
+        case 'a': //Light on
+            light_action(ON);
+            break;
+        case 'b': //Light off
+            light_action(OFF);
+            break;
+        case 'c': //Buzzer on
+            buzzer_action(ON);
+            break;
+        case 'd': //Buzzer off
+            buzzer_action(OFF);
+            break;
+        case 'e': //Go Straight
+            go_straight();
+            break;
+        case 'f': //Turn Left
+            turn_left();
+            break;
+        case 'g': //Turn Right
+            turn_right();
+            break;
+        case 'h': //Go Forward
+            run_forward();
+            break;
+        case 'i': //Go Backward
+            run_backward();
+            break;
+        case 'j': //Stop
+            stop_car();
+            break;
         }
     }
+
     delay(100);// prepare for next data ...
 }
 
